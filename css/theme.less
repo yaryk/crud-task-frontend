@@ -1,0 +1,115 @@
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.users-edit {
+  background: #ffffff;
+  padding: 10px 30px 40px;
+  width: 560px;
+  box-shadow: 0 0 20px rgba(30, 30, 30, .5);
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  margin-left: -280px;
+  transition: opacity .3s, margin-top .5s;
+
+  &.users-edit-hidden {
+    opacity: 0;
+    margin-top: -600px;
+  }
+
+  h2 {
+    text-align: center;
+    text-transform: uppercase;
+  }
+}
+
+.field-row {
+  margin-bottom: 5px;
+
+  > label {
+    width: 150px;
+    display: inline-block;
+  }
+
+  > input {
+    width: 345px;
+  }
+
+  > textarea {
+    display: block;
+    width: 500px;
+    height: 100px;
+  }
+
+  > input,
+  > textarea {
+    border-radius: 4px;
+    padding: 4px 15px;
+    border: 1px solid #ccc;
+    outline: none;
+  }
+}
+
+.btn {
+  padding: 4px 20px;
+  border: none;
+  transition: background .3s;
+  cursor: pointer;
+
+  &.btn-new {
+    background: #9ea;
+
+    &:hover {
+      background: #9fb;
+    }
+  }
+
+  &.btn-save {
+    background: #9ae;
+
+    &:hover {
+      background: #9bf;
+    }
+  }
+
+  &.btn-cancel {
+    background: #ccc;
+
+    &:hover {
+      background: #eee;
+    }
+  }
+}
+
+#users-table {
+  margin-top: 10px;
+  width: 100%;
+  text-align: center;
+  border-spacing: 0;
+
+  tr:nth-child(odd) {
+    background: #ccc;
+  }
+  tr:nth-child(even) {
+    background: #eee;
+  }
+  th {
+    text-transform: uppercase;
+  }
+  td {
+    padding: 2px 10px;
+  }
+}
+
+a {
+  text-decoration: none;
+  color: #37c;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+}

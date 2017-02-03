@@ -1,0 +1,95 @@
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.users-edit {
+  background: #ffffff;
+  padding: 10px 30px 40px;
+  width: 560px;
+  box-shadow: 0 0 20px rgba(30, 30, 30, 0.5);
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  margin-left: -280px;
+  transition: opacity 0.3s, margin-top 0.5s;
+}
+.users-edit.users-edit-hidden {
+  opacity: 0;
+  margin-top: -600px;
+}
+.users-edit h2 {
+  text-align: center;
+  text-transform: uppercase;
+}
+.field-row {
+  margin-bottom: 5px;
+}
+.field-row > label {
+  width: 150px;
+  display: inline-block;
+}
+.field-row > input {
+  width: 345px;
+}
+.field-row > textarea {
+  display: block;
+  width: 500px;
+  height: 100px;
+}
+.field-row > input,
+.field-row > textarea {
+  border-radius: 4px;
+  padding: 4px 15px;
+  border: 1px solid #ccc;
+  outline: none;
+}
+.btn {
+  padding: 4px 20px;
+  border: none;
+  transition: background .3s;
+  cursor: pointer;
+}
+.btn.btn-new {
+  background: #9ea;
+}
+.btn.btn-new:hover {
+  background: #9fb;
+}
+.btn.btn-save {
+  background: #9ae;
+}
+.btn.btn-save:hover {
+  background: #9bf;
+}
+.btn.btn-cancel {
+  background: #ccc;
+}
+.btn.btn-cancel:hover {
+  background: #eee;
+}
+#users-table {
+  margin-top: 10px;
+  width: 100%;
+  text-align: center;
+  border-spacing: 0;
+}
+#users-table tr:nth-child(odd) {
+  background: #ccc;
+}
+#users-table tr:nth-child(even) {
+  background: #eee;
+}
+#users-table th {
+  text-transform: uppercase;
+}
+#users-table td {
+  padding: 2px 10px;
+}
+a {
+  text-decoration: none;
+  color: #37c;
+}
+a:hover {
+  text-decoration: underline;
+}
