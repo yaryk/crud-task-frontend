@@ -23,38 +23,14 @@ countiesRequest.send();
 xhr.open("GET", "/user");
 xhr.addEventListener("readystatechange", function () {
     if (xhr.readyState != 4) {
-        console.log(xhr.statusText + xhr.status);
         return;
     }
     var usersList = JSON.parse(xhr.responseText);
     for (var i = 0; i < usersList.length; i++) {
-        var tr = document.createElement("tr"),
-            nameTd = document.createElement("td"),
-            profTd = document.createElement("td"),
-            sInfoTd = document.createElement("td"),
-            optionsTd = document.createElement("td"),
-            removeBtn = document.createElement("a"),
-            editBtn = document.createElement("a");
-
-        removeBtn.textContent = "Remove";
-        editBtn.textContent = "Edit";
-
-        nameTd.textContent = usersList[i].fullName;
-        profTd.textContent = usersList[i].profession;
-        sInfoTd.textContent = usersList[i].shortInfo;
-        optionsTd.appendChild(removeBtn);
-        optionsTd.appendChild(editBtn);
-
-        tr.appendChild(nameTd);
-        tr.appendChild(profTd);
-        tr.appendChild(sInfoTd);
-        tr.appendChild(optionsTd);
-        table.appendChild(tr);
-        addRemoveHandler(removeBtn, i, usersList);
+        addTableRow(usersList[i]);
     }
 
 });
-
 xhr.send();
 
 var createBtn = document.getElementById("create"),
@@ -63,9 +39,7 @@ var createBtn = document.getElementById("create"),
 
 createBtn.addEventListener("click", function () {
     formEdit.classList.remove("users-edit-hidden");
-    for (var i = 0; i < formEdit.elements.length; i++) {
-        formEdit.elements[i].value = "";
-    }
+    clearFormFields();
 });
 
 formEdit.addEventListener("submit", function (e) {
@@ -88,22 +62,46 @@ formEdit.addEventListener("submit", function (e) {
         if (xhr.readyState != 4) {
             return;
         }
-        
+        var newUser = JSON.parse(xhr.responseText);
+        addTableRow(newUser);
     });
     xhr.send(json);
+    clearFormFields();
 });
 
 cancelBtn.addEventListener("click", function () {
     formEdit.classList.add("users-edit-hidden");
 });
 
-function addRemoveHandler(btn, index, allUsers) {
+function addTableRow(user){
+    var tr = document.createElement("tr"),
+            nameTd = document.createElement("td"),
+            profTd = document.createElement("td"),
+            sInfoTd = document.createElement("td"),
+            optionsTd = document.createElement("td"),
+            removeBtn = document.createElement("a"),
+            editBtn = document.createElement("a");
+    removeBtn.textContent = "Remove";
+    editBtn.textContent = "Edit";
+    nameTd.textContent = user.fullName;
+    profTd.textContent = user.profession;
+    sInfoTd.textContent = user.shortInfo;
+    optionsTd.appendChild(removeBtn);
+    optionsTd.appendChild(editBtn);
+
+    tr.appendChild(nameTd);
+    tr.appendChild(profTd);
+    tr.appendChild(sInfoTd);
+    tr.appendChild(optionsTd);
+    table.appendChild(tr);
+    addRemoveHandler(removeBtn, user);
+}
+function addRemoveHandler(btn, user) {
     btn.addEventListener("click", function (e) {
         var xhrRemove = new XMLHttpRequest();
-        xhrRemove.open("DELETE", "/user?id=" + allUsers[index].id);
+        xhrRemove.open("DELETE", "/user?id=" + user.id);
         xhrRemove.addEventListener("readystatechange", function () {
             if (xhrRemove.readyState != 4) {
-                console.log("Error" + xhrRemove.statusText + xhrRemove.status);
                 return;
             }
             table.removeChild(e.target.parentNode.parentNode);
@@ -111,6 +109,9 @@ function addRemoveHandler(btn, index, allUsers) {
         xhrRemove.send();
     });
 }
-
-
+function clearFormFields(){
+    for (var i = 0; i < formEdit.elements.length; i++) {
+        formEdit.elements[i].value = "";
+    }
+}
 
