@@ -1,37 +1,55 @@
 /**
  * Created by Slavik on 2/1/2017.
  */
-var table = document.getElementById("users-table"),
-    xhr = new XMLHttpRequest(),
-    countiesRequest = new XMLHttpRequest();
-countiesRequest.open("GET", "/countries");
-countiesRequest.addEventListener("readystatechange", function () {
-    if (countiesRequest.readyState != 4) {
-        return;
+function Request() {
+}
+Request.execute = function (url, callback, method, data) {
+    var xhr = new XMLHttpRequest();
+    xhr.open(method, url);
+    xhr.responseType = "json";
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.addEventListener("readystatechange", function () {
+        if (xhr.readyState != 4) {
+            return;
+        }
+        callback(xhr.response);
+    });
+    var dataToSend = null;
+    if (data) {
+        dataToSend = JSON.stringify(data);
     }
+    xhr.send(dataToSend);
+};
 
-    var arrOfCountries = JSON.parse(countiesRequest.responseText),
-        selectCountries = document.getElementById("country");
-    for (var i = 0; i < arrOfCountries.length; i++) {
+Request.get = function (url, callback) {
+    Request.execute(url, callback, "GET");
+};
+Request.post = function (url, callback, data) {
+    Request.execute(url, callback, "POST", data);
+};
+Request.delete = function (url, callback) {
+    Request.execute(url, callback, "DELETE");
+};
+Request.put = function (url, callback, data) {
+    Request.execute(url, callback, "PUT", data);
+};
+
+var table = document.getElementById("users-table");
+
+Request.get("/countries", function (arrOfCountries) {
+    var selectCountries = document.getElementById("country");
+    for (var i = 0, len =  arrOfCountries.length; i < len; i++) {
         var option = document.createElement("option");
         option.textContent = arrOfCountries[i];
         selectCountries.appendChild(option);
     }
 });
-countiesRequest.send();
 
-xhr.open("GET", "/user");
-xhr.addEventListener("readystatechange", function () {
-    if (xhr.readyState != 4) {
-        return;
-    }
-    var usersList = JSON.parse(xhr.responseText);
-    for (var i = 0; i < usersList.length; i++) {
+Request.get("/user", function (usersList) {
+    for (var i = 0, len = usersList.length; i < len; i++) {
         addTableRow(usersList[i]);
     }
-
 });
-xhr.send();
 
 var createBtn = document.getElementById("create"),
     formEdit = document.forms["users-edit"],
@@ -40,10 +58,79 @@ var createBtn = document.getElementById("create"),
 createBtn.addEventListener("click", function () {
     formEdit.classList.remove("users-edit-hidden");
     clearFormFields();
+
 });
 
 formEdit.addEventListener("submit", function (e) {
     e.preventDefault();
+    if (formEdit.id.value.length == 0) {
+        submitCreateUser();
+    }
+    else {
+        submitEditUser();
+    }
+    formEdit.classList.add("users-edit-hidden");
+});
+
+cancelBtn.addEventListener("click", function () {
+    formEdit.classList.add("users-edit-hidden");
+});
+
+function addTableRow(user) {
+    var tr = document.createElement("tr");
+    addTableCell(tr, user.fullName);
+    addTableCell(tr, user.profession);
+    addTableCell(tr, user.shortInfo);
+    var removeBtn = addOptionBtn(tr, "Remove"),
+        editBtn = addOptionBtn(tr, "Edit");
+    addRemoveHandler(removeBtn, user);
+    editHandler(editBtn, user);
+    tr.dataset.id = user.id;
+    table.appendChild(tr);
+}
+
+function addTableCell(row, cellContent) {
+    var cell = document.createElement("td");
+    cell.textContent = cellContent;
+    row.appendChild(cell);
+}
+function addOptionBtn(row, value){
+    var btn = document.createElement("a");
+    btn.textContent = value;
+    row.appendChild(btn);
+    return btn;
+}
+function addRemoveHandler(btn, user) {
+    btn.addEventListener("click", function (e) {
+        var id = "/user?id=" + user.id;
+        Request.delete(id, function () {
+            table.removeChild(e.target.parentNode);
+        });
+
+    });
+}
+function editHandler(btn, user) {
+    btn.addEventListener("click", function () {
+        var id = "user?id=" + user.id;
+        Request.get(id, function(editUser){
+            formEdit.fullname.value = editUser.fullName;
+            formEdit.birthday.value = editUser.birthday;
+            formEdit.profession.value = editUser.profession;
+            formEdit.address.value = editUser.address;
+            formEdit.country.value = editUser.country;
+            formEdit["short-info"].value = editUser.shortInfo;
+            formEdit["full-info"].value = editUser.fullInfo;
+            formEdit.id.value = editUser.id;
+        });
+        formEdit.classList.remove("users-edit-hidden");
+    });
+}
+function clearFormFields() {
+    for (var i = 0, len = formEdit.elements.length; i < len; i++) {
+        formEdit.elements[i].value = "";
+    }
+}
+function submitCreateUser() {
     var body = {
         fullName: this.fullname.value,
         birthday: this.birthday.value,
@@ -54,64 +141,35 @@ formEdit.addEventListener("submit", function (e) {
         shortInfo: this["short-info"].value,
         fullInfo: this["full-info"].value
     };
-    var json = JSON.stringify(body);
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "user/");
-    xhr.setRequestHeader("Content-type", "application/json");
-    xhr.addEventListener("readystatechange", function () {
-        if (xhr.readyState != 4) {
-            return;
-        }
-        var newUser = JSON.parse(xhr.responseText);
+    Request.post("/user", function (newUser) {
         addTableRow(newUser);
-    });
-    xhr.send(json);
+    }, body);
+
     clearFormFields();
-});
-
-cancelBtn.addEventListener("click", function () {
-    formEdit.classList.add("users-edit-hidden");
-});
-
-function addTableRow(user){
-    var tr = document.createElement("tr"),
-            nameTd = document.createElement("td"),
-            profTd = document.createElement("td"),
-            sInfoTd = document.createElement("td"),
-            optionsTd = document.createElement("td"),
-            removeBtn = document.createElement("a"),
-            editBtn = document.createElement("a");
-    removeBtn.textContent = "Remove";
-    editBtn.textContent = "Edit";
-    nameTd.textContent = user.fullName;
-    profTd.textContent = user.profession;
-    sInfoTd.textContent = user.shortInfo;
-    optionsTd.appendChild(removeBtn);
-    optionsTd.appendChild(editBtn);
-
-    tr.appendChild(nameTd);
-    tr.appendChild(profTd);
-    tr.appendChild(sInfoTd);
-    tr.appendChild(optionsTd);
-    table.appendChild(tr);
-    addRemoveHandler(removeBtn, user);
 }
-function addRemoveHandler(btn, user) {
-    btn.addEventListener("click", function (e) {
-        var xhrRemove = new XMLHttpRequest();
-        xhrRemove.open("DELETE", "/user?id=" + user.id);
-        xhrRemove.addEventListener("readystatechange", function () {
-            if (xhrRemove.readyState != 4) {
-                return;
-            }
-            table.removeChild(e.target.parentNode.parentNode);
-        });
-        xhrRemove.send();
-    });
+function submitEditUser() {
+    var body = {
+        fullName: this.fullname.value,
+        birthday: this.birthday.value,
+        profession: this.profession.value,
+        email: null,
+        address: this.address.value,
+        country: this.country.value,
+        shortInfo: this["short-info"].value,
+        fullInfo: this["full-info"].value,
+        id: this.id.value
+    };
+    Request.put("/user", function (newUser) {
+        editTableRow(newUser);
+    }, body);
+
 }
-function clearFormFields(){
-    for (var i = 0; i < formEdit.elements.length; i++) {
-        formEdit.elements[i].value = "";
-    }
+
+function editTableRow(user) {
+    var tableRow = document.querySelector("[data-id=\"" + user.id + "\"]");
+    tableRow.children[0].textContent = user.fullName;
+    tableRow.children[1].textContent = user.profession;
+    tableRow.children[2].textContent = user.shortInfo;
 }
+
 
