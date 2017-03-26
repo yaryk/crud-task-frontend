@@ -1,8 +1,5 @@
-/**
- * Created by Slavik on 2/1/2017.
- */
-function Request() {
-}
+
+function Request() {};
 Request.execute = function (url, callback, method, data) {
     var xhr = new XMLHttpRequest();
     xhr.open(method, url);
@@ -19,20 +16,20 @@ Request.execute = function (url, callback, method, data) {
         dataToSend = JSON.stringify(data);
     }
     xhr.send(dataToSend);
-};
+}
 
 Request.get = function (url, callback) {
     Request.execute(url, callback, "GET");
-};
+}
 Request.post = function (url, callback, data) {
     Request.execute(url, callback, "POST", data);
-};
+}
 Request.delete = function (url, callback) {
     Request.execute(url, callback, "DELETE");
-};
+}
 Request.put = function (url, callback, data) {
     Request.execute(url, callback, "PUT", data);
-};
+}
 
 var table = document.getElementById("users-table");
 
@@ -119,7 +116,7 @@ function editHandler(btn, user) {
             formEdit.address.value = editUser.address;
             formEdit.country.value = editUser.country;
             formEdit["short-info"].value = editUser.shortInfo;
-            formEdit["full-info"].value = editUser.fullInfo;
+            formEdit["full-info"].value = editUser.fullInfo
             formEdit.id.value = editUser.id;
         });
         formEdit.classList.remove("users-edit-hidden");
@@ -170,6 +167,5 @@ function editTableRow(user) {
     tableRow.children[0].textContent = user.fullName;
     tableRow.children[1].textContent = user.profession;
     tableRow.children[2].textContent = user.shortInfo;
-}
-
+};
 
