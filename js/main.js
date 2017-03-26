@@ -1,64 +1,67 @@
-
-function Request() {};
-Request.execute = function (url, callback, method, data) {
-    var xhr = new XMLHttpRequest();
-    xhr.open(method, url);
-    xhr.responseType = "json";
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.addEventListener("readystatechange", function () {
-        if (xhr.readyState != 4) {
-            return;
+class Request {
+    static execute(url, callback, method, data) {
+        var xhr = new XMLHttpRequest(); // TODO: rewrite request with using Promise
+        xhr.open(method, url);
+        xhr.responseType = "json";
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.addEventListener("readystatechange", function () {
+            if (xhr.readyState != 4) {
+                return;
+            }
+            callback(xhr.response);
+        });
+        var dataToSend = null;
+        if (data) {
+            dataToSend = JSON.stringify(data);
         }
-        callback(xhr.response);
-    });
-    var dataToSend = null;
-    if (data) {
-        dataToSend = JSON.stringify(data);
+        xhr.send(dataToSend);
     }
-    xhr.send(dataToSend);
+
+    static get(url, callback) {
+        Request.execute(url, callback, "GET");
+    }
+
+    static post(url, callback, data) {
+        Request.execute(url, callback, "POST", data);
+    }
+
+    static delete(url, callback) {
+        Request.execute(url, callback, "DELETE");
+    }
+
+    static put(url, callback, data) {
+        Request.execute(url, callback, "PUT", data);
+    }
 }
 
-Request.get = function (url, callback) {
-    Request.execute(url, callback, "GET");
-}
-Request.post = function (url, callback, data) {
-    Request.execute(url, callback, "POST", data);
-}
-Request.delete = function (url, callback) {
-    Request.execute(url, callback, "DELETE");
-}
-Request.put = function (url, callback, data) {
-    Request.execute(url, callback, "PUT", data);
-}
-
-var table = document.getElementById("users-table");
+let table = document.getElementById("users-table");
 
 Request.get("/countries", function (arrOfCountries) {
-    var selectCountries = document.getElementById("country");
-    for (var i = 0, len =  arrOfCountries.length; i < len; i++) {
-        var option = document.createElement("option");
-        option.textContent = arrOfCountries[i];
+    let selectCountries = document.getElementById("country");
+    arrOfCountries.forEach((country) => {
+        let option = document.createElement("option");
+        option.textContent = country;
         selectCountries.appendChild(option);
-    }
+    });
 });
 
-Request.get("/user", function (usersList) {
-    for (var i = 0, len = usersList.length; i < len; i++) {
-        addTableRow(usersList[i]);
-    }
+Request.get("/user", (usersList) => {
+    usersList.forEach((item) => {
+        addTableRow(item);
+})
+    ;
 });
 
-var createBtn = document.getElementById("create"),
+let createBtn = document.getElementById("create"),
     formEdit = document.forms["users-edit"],
     cancelBtn = document.getElementById("cancel");
 
-createBtn.addEventListener("click", function () {
+createBtn.addEventListener("click", () => {
     formEdit.classList.remove("users-edit-hidden");
     clearFormFields();
-
 });
 
-formEdit.addEventListener("submit", function (e) {
+formEdit.addEventListener("submit", (e) => {
     e.preventDefault();
     if (formEdit.id.value.length == 0) {
         submitCreateUser();
@@ -69,16 +72,16 @@ formEdit.addEventListener("submit", function (e) {
     formEdit.classList.add("users-edit-hidden");
 });
 
-cancelBtn.addEventListener("click", function () {
+cancelBtn.addEventListener("click", () => {
     formEdit.classList.add("users-edit-hidden");
 });
 
 function addTableRow(user) {
-    var tr = document.createElement("tr");
+    let tr = document.createElement("tr");
     addTableCell(tr, user.fullName);
     addTableCell(tr, user.profession);
     addTableCell(tr, user.shortInfo);
-    var removeBtn = addOptionBtn(tr, "Remove"),
+    let removeBtn = addOptionBtn(tr, "Remove"),
         editBtn = addOptionBtn(tr, "Edit");
     addRemoveHandler(removeBtn, user);
     editHandler(editBtn, user);
@@ -87,29 +90,28 @@ function addTableRow(user) {
 }
 
 function addTableCell(row, cellContent) {
-    var cell = document.createElement("td");
+    let cell = document.createElement("td");
     cell.textContent = cellContent;
     row.appendChild(cell);
 }
-function addOptionBtn(row, value){
-    var btn = document.createElement("a");
+function addOptionBtn(row, value) {
+    let btn = document.createElement("a");
     btn.textContent = value;
     row.appendChild(btn);
     return btn;
 }
 function addRemoveHandler(btn, user) {
-    btn.addEventListener("click", function (e) {
-        var id = "/user?id=" + user.id;
-        Request.delete(id, function () {
+    btn.addEventListener("click", (e) => {
+        let id = `/user?id=${user.id}`;
+        Request.delete(id, () => {
             table.removeChild(e.target.parentNode);
         });
-
     });
 }
 function editHandler(btn, user) {
-    btn.addEventListener("click", function () {
-        var id = "user?id=" + user.id;
-        Request.get(id, function(editUser){
+    btn.addEventListener("click", () => {
+        var id = `user?id=${user.id}`;
+        Request.get(id, (editUser) => {
             formEdit.fullname.value = editUser.fullName;
             formEdit.birthday.value = editUser.birthday;
             formEdit.profession.value = editUser.profession;
@@ -123,12 +125,12 @@ function editHandler(btn, user) {
     });
 }
 function clearFormFields() {
-    for (var i = 0, len = formEdit.elements.length; i < len; i++) {
-        formEdit.elements[i].value = "";
-    }
+    Array.prototype.map.call(formEdit.elements, (item) => {
+        item.value = "";
+    });
 }
 function submitCreateUser() {
-    var body = {
+    let body = {
         fullName: this.fullname.value,
         birthday: this.birthday.value,
         profession: this.profession.value,
@@ -138,7 +140,7 @@ function submitCreateUser() {
         shortInfo: this["short-info"].value,
         fullInfo: this["full-info"].value
     };
-    Request.post("/user", function (newUser) {
+    Request.post("/user", (newUser) => {
         addTableRow(newUser);
     }, body);
 
@@ -156,14 +158,14 @@ function submitEditUser() {
         fullInfo: this["full-info"].value,
         id: this.id.value
     };
-    Request.put("/user", function (newUser) {
+    Request.put("/user", (newUser) => {
         editTableRow(newUser);
     }, body);
 
 }
 
 function editTableRow(user) {
-    var tableRow = document.querySelector("[data-id=\"" + user.id + "\"]");
+    var tableRow = document.querySelector(`[data-id="${user.id}"]`);
     tableRow.children[0].textContent = user.fullName;
     tableRow.children[1].textContent = user.profession;
     tableRow.children[2].textContent = user.shortInfo;
