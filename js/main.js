@@ -1,56 +1,63 @@
 class Request {
-    static execute(url, callback, method, data) {
-        var xhr = new XMLHttpRequest(); // TODO: rewrite request with using Promise
-        xhr.open(method, url);
-        xhr.responseType = "json";
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.addEventListener("readystatechange", function () {
-            if (xhr.readyState != 4) {
-                return;
+    static execute(url, method, data) {
+        return new Promise (function(resolve, reject) {
+            var xhr = new XMLHttpRequest(); // TODO: rewrite request with using Promise
+            xhr.open(method, url);
+            xhr.responseType = "json";
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.addEventListener("readystatechange", function () {
+                if (xhr.readyState != 4) {
+                    return;
+                }
+                resolve(xhr.response);
+            });
+            // xhr.addEventListener("load", function() {
+            //    if(xhr.status !== 200){
+            //        reject(xhr.status);
+            //    }
+            // });
+            var dataToSend = null;
+            if (data) {
+                dataToSend = JSON.stringify(data);
             }
-            callback(xhr.response);
+            xhr.send(dataToSend);
         });
-        var dataToSend = null;
-        if (data) {
-            dataToSend = JSON.stringify(data);
-        }
-        xhr.send(dataToSend);
     }
 
-    static get(url, callback) {
-        Request.execute(url, callback, "GET");
+    static get(url) {
+        return Request.execute(url, "GET");
     }
 
-    static post(url, callback, data) {
-        Request.execute(url, callback, "POST", data);
+    static post(url, data) {
+        return Request.execute(url, "POST", data);
     }
 
-    static delete(url, callback) {
-        Request.execute(url, callback, "DELETE");
+    static delete(url) {
+        return Request.execute(url, "DELETE");
     }
 
-    static put(url, callback, data) {
-        Request.execute(url, callback, "PUT", data);
+    static put(url, data) {
+        return Request.execute(url, "PUT", data);
     }
 }
 
 let table = document.getElementById("users-table");
 
-Request.get("/countries", function (arrOfCountries) {
-    let selectCountries = document.getElementById("country");
-    arrOfCountries.forEach((country) => {
-        let option = document.createElement("option");
-        option.textContent = country;
-        selectCountries.appendChild(option);
+Request.get("/countries")
+    .then(function (arrOfCountries) {
+        let selectCountries = document.getElementById("country");
+        arrOfCountries.forEach((country) => {
+            let option = document.createElement("option");
+            option.textContent = country;
+            selectCountries.appendChild(option);
+        });
     });
-});
 
-Request.get("/user", (usersList) => {
-    usersList.forEach((item) => {
-        addTableRow(item);
-})
-    ;
-});
+Request.get("/user")
+    .then((usersList) => {
+        usersList.forEach((item) => {
+            addTableRow(item);
+        })});
 
 let createBtn = document.getElementById("create"),
     formEdit = document.forms["users-edit"],
@@ -103,24 +110,26 @@ function addOptionBtn(row, value) {
 function addRemoveHandler(btn, user) {
     btn.addEventListener("click", (e) => {
         let id = `/user?id=${user.id}`;
-        Request.delete(id, () => {
-            table.removeChild(e.target.parentNode);
-        });
+        Request.delete(id)
+            .then(() => {
+                table.removeChild(e.target.parentNode);
+            });
     });
 }
 function editHandler(btn, user) {
     btn.addEventListener("click", () => {
         var id = `user?id=${user.id}`;
-        Request.get(id, (editUser) => {
-            formEdit.fullname.value = editUser.fullName;
-            formEdit.birthday.value = editUser.birthday;
-            formEdit.profession.value = editUser.profession;
-            formEdit.address.value = editUser.address;
-            formEdit.country.value = editUser.country;
-            formEdit["short-info"].value = editUser.shortInfo;
-            formEdit["full-info"].value = editUser.fullInfo
-            formEdit.id.value = editUser.id;
-        });
+        Request.get(id)
+            .then((editUser) => {
+                formEdit.fullname.value = editUser.fullName;
+                formEdit.birthday.value = editUser.birthday;
+                formEdit.profession.value = editUser.profession;
+                formEdit.address.value = editUser.address;
+                formEdit.country.value = editUser.country;
+                formEdit["short-info"].value = editUser.shortInfo;
+                formEdit["full-info"].value = editUser.fullInfo
+                formEdit.id.value = editUser.id;
+            });
         formEdit.classList.remove("users-edit-hidden");
     });
 }
@@ -140,10 +149,10 @@ function submitCreateUser() {
         shortInfo: this["short-info"].value,
         fullInfo: this["full-info"].value
     };
-    Request.post("/user", (newUser) => {
-        addTableRow(newUser);
-    }, body);
-
+    Request.post("/user", body)
+        .then((newUser) => {
+            addTableRow(newUser);
+        });
     clearFormFields();
 }
 function submitEditUser() {
@@ -158,10 +167,10 @@ function submitEditUser() {
         fullInfo: this["full-info"].value,
         id: this.id.value
     };
-    Request.put("/user", (newUser) => {
-        editTableRow(newUser);
-    }, body);
-
+    Request.put("/user", body)
+        .then((newUser) => {
+            editTableRow(newUser);
+        });
 }
 
 function editTableRow(user) {
