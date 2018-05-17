@@ -1,2 +1,4 @@
 node_modules/
 .idea/
+./js/main.js
+./js/other.js

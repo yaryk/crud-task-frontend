@@ -6,7 +6,7 @@ var express = require("express"),
 	app = express(),
 	userHandlerInit = require("./backend/handlers/user-handler"),
 	USERS_PATH = __dirname + "/resources/data.json",
-	LISTEN_PORT = 8081;
+	LISTEN_PORT = 3001;
 
 app.use(bodyParser.json());
 
